@@ -82,18 +82,27 @@
 
         <div class="bg-white p-6 rounded-xl shadow-lg w-full">
             <!-- Top Controls -->
-            <div class="flex flex-col sm:flex-row items-center justify-between mb-6 pb-6 border-b border-gray-200">
-                <div class="flex items-center space-x-4">
-                    <label for="file-input" class="cursor-pointer bg-blue-600 text-white font-bold py-2 px-5 rounded-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300">
-                        Upload CV
-                    </label>
-                    <input type="file" id="file-input" class="hidden" accept=".pdf">
-                    <p id="file-name" class="text-sm font-medium text-gray-600"></p>
+            <div class="space-y-4 mb-6 pb-6 border-b border-gray-200">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center space-x-4">
+                        <label for="file-input" class="cursor-pointer bg-blue-600 text-white font-bold py-2 px-5 rounded-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 whitespace-nowrap">
+                            1. Upload CV
+                        </label>
+                        <p id="file-name" class="text-sm font-medium text-gray-600"></p>
+                    </div>
+                     <button id="assess-btn" class="w-full sm:w-auto bg-green-600 text-white font-bold py-2 px-8 rounded-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none" disabled>
+                        Assess My CV
+                    </button>
                 </div>
-                 <button id="assess-btn" class="mt-4 sm:mt-0 w-full sm:w-auto bg-green-600 text-white font-bold py-2 px-8 rounded-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none" disabled>
-                    Assess My CV
-                </button>
+                 <div class="w-full">
+                    <label for="api-key-input" class="flex items-center text-sm font-bold text-gray-700 mb-1">
+                        <span>2. Enter Your Gemini API Key</span>
+                        <a href="https://aistudio.google.com/app/apikey" target="_blank" class="ml-2 text-blue-600 hover:underline">(Get a key here)</a>
+                    </label>
+                    <input type="password" id="api-key-input" placeholder="Paste your API key here to enable assessment" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
             </div>
+             <input type="file" id="file-input" class="hidden" accept=".pdf">
             
             <!-- Assessment Output Section -->
             <div id="assessment-output">
@@ -103,7 +112,7 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                     <h3 class="mt-2 text-xl font-medium">Ready for Analysis</h3>
-                    <p class="mt-1 text-sm">Please upload your CV in PDF format to begin.</p>
+                    <p class="mt-1 text-sm">Please upload a CV and enter your API key to begin.</p>
                 </div>
                 
                 <!-- Loading Spinner -->
@@ -161,6 +170,7 @@
     <script>
         const assessBtn = document.getElementById('assess-btn');
         const cvInput = document.getElementById('cv-input');
+        const apiKeyInput = document.getElementById('api-key-input');
         const assessmentOutput = document.getElementById('assessment-output');
         const initialState = document.getElementById('initial-state');
         const loadingSpinner = document.getElementById('loading-spinner');
@@ -176,18 +186,26 @@
         let pdfDoc = null; 
 
         pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js`;
+        
+        function checkReadyState() {
+            const apiKey = apiKeyInput.value.trim();
+            const fileLoaded = pdfDoc !== null;
+            assessBtn.disabled = !(apiKey && fileLoaded);
+        }
 
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) handleFile(e.target.files[0]);
         });
+        apiKeyInput.addEventListener('input', checkReadyState);
         
         function handleFile(file) {
             if (file.type !== 'application/pdf') {
                 alert('Please upload a PDF file.');
                 return;
             }
+            pdfDoc = null;
+            checkReadyState();
             fileNameEl.textContent = `Processing: ${file.name}`;
-            assessBtn.disabled = true;
 
             const reader = new FileReader();
             reader.onload = function(event) {
@@ -204,7 +222,7 @@
                     Promise.all(pagePromises).then(pagesText => {
                         cvInput.value = pagesText.join('\n\n');
                         fileNameEl.textContent = `${file.name}`;
-                        assessBtn.disabled = false;
+                        checkReadyState();
                     });
                 }).catch(err => {
                     console.error('Error parsing PDF:', err);
@@ -231,6 +249,12 @@
 
         assessBtn.addEventListener('click', async () => {
             const cvText = cvInput.value;
+            const apiKey = apiKeyInput.value.trim();
+
+            if (!apiKey) {
+                alert("Please enter your Gemini API key.");
+                return;
+            }
             if (cvText.trim().length < 50) {
                 alert("Extracted text is too short. Please try another file.");
                 return;
@@ -241,12 +265,12 @@
             changeTab('reviewed');
 
             try {
-                const assessment = await analyzeCVWithGemini(cvText);
+                const assessment = await analyzeCVWithGemini(cvText, apiKey);
                 if (assessment) {
                     displayResults(assessment);
                     renderAndHighlightCV(pdfDoc, assessment);
                 } else {
-                    alert("Analysis failed. Please try again.");
+                    alert("Analysis failed. Please try again. Check the console for API errors.");
                 }
             } catch (error) {
                 console.error("Error during Gemini analysis:", error);
@@ -257,8 +281,7 @@
             }
         });
         
-        async function analyzeCVWithGemini(text) {
-            const apiKey = ""; // Left blank as per instructions
+        async function analyzeCVWithGemini(text, apiKey) {
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
             const systemPrompt = "You are an expert career coach and CV analyst. Your task is to review the provided CV text and return a structured JSON object with your analysis. Do not include any introductory text or markdown formatting in your response.";
