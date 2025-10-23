@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CV Assessment App</title>
+    <title>CV-to-Job Description Analyzer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- PDF.js library for reading PDF files -->
@@ -76,33 +76,42 @@
 
     <div class="container mx-auto p-4 md:p-8">
         <header class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-gray-900">AI-Powered CV Assistant</h1>
-            <p class="text-lg text-gray-600 mt-2">Upload your CV and let Gemini provide expert feedback to improve it.</p>
+            <h1 class="text-4xl font-bold text-gray-900">AI-Powered CV & Job Description Analyzer</h1>
+            <p class="text-lg text-gray-600 mt-2">Tailor your CV to the job by analyzing them together.</p>
         </header>
 
         <div class="bg-white p-6 rounded-xl shadow-lg w-full">
             <!-- Top Controls -->
             <div class="space-y-4 mb-6 pb-6 border-b border-gray-200">
-                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div class="flex items-center space-x-4">
-                        <label for="file-input" class="cursor-pointer bg-blue-600 text-white font-bold py-2 px-5 rounded-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 whitespace-nowrap">
-                            1. Upload CV
-                        </label>
-                        <p id="file-name" class="text-sm font-medium text-gray-600"></p>
-                    </div>
-                     <button id="assess-btn" class="w-full sm:w-auto bg-green-600 text-white font-bold py-2 px-8 rounded-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none" disabled>
-                        Assess My CV
-                    </button>
+                <!-- Step 1: Upload CV -->
+                 <div class="flex items-center space-x-4">
+                    <label for="file-input" class="cursor-pointer bg-blue-600 text-white font-bold py-2 px-5 rounded-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 whitespace-nowrap">
+                        1. Upload CV
+                    </label>
+                    <p id="file-name" class="text-sm font-medium text-gray-600"></p>
                 </div>
+                <input type="file" id="file-input" class="hidden" accept=".pdf">
+
+                <!-- Step 2: Paste Job Description -->
+                 <div class="w-full">
+                    <label for="job-desc-input" class="text-sm font-bold text-gray-700 mb-1 block">2. Paste Job Description</label>
+                    <textarea id="job-desc-input" rows="6" placeholder="Paste the full job description here..." class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+                
+                <!-- Step 3: API Key -->
                  <div class="w-full">
                     <label for="api-key-input" class="flex items-center text-sm font-bold text-gray-700 mb-1">
-                        <span>2. Enter Your Gemini API Key</span>
+                        <span>3. Enter Your Gemini API Key</span>
                         <a href="https://aistudio.google.com/app/apikey" target="_blank" class="ml-2 text-blue-600 hover:underline">(Get a key here)</a>
                     </label>
-                    <input type="password" id="api-key-input" placeholder="Paste your API key here to enable assessment" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="password" id="api-key-input" placeholder="Paste your API key here to enable analysis" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
+
+                 <!-- Analyze Button -->
+                <button id="assess-btn" class="w-full bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none" disabled>
+                    Analyze CV Against Job
+                </button>
             </div>
-             <input type="file" id="file-input" class="hidden" accept=".pdf">
             
             <!-- Assessment Output Section -->
             <div id="assessment-output">
@@ -112,7 +121,7 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                     <h3 class="mt-2 text-xl font-medium">Ready for Analysis</h3>
-                    <p class="mt-1 text-sm">Please upload a CV and enter your API key to begin.</p>
+                    <p class="mt-1 text-sm">Please complete all three steps above to begin.</p>
                 </div>
                 
                 <!-- Loading Spinner -->
@@ -121,7 +130,7 @@
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <p class="mt-4 text-gray-600">Gemini is analyzing your CV...</p>
+                    <p class="mt-4 text-gray-600">Gemini is analyzing your CV against the job description...</p>
                 </div>
                 
                 <!-- Results Content -->
@@ -133,7 +142,7 @@
                         </div>
                         <div id="traffic-light" class="traffic-light traffic-light-gray mt-4 md:mt-0"></div>
                         <div class="text-center md:text-right mt-4 md:mt-0">
-                             <p class="text-sm text-gray-500">Overall Score</p>
+                             <p class="text-sm text-gray-500">CV-to-Job Match</p>
                             <h3 id="cv-score" class="text-3xl font-bold">0/100</h3>
                         </div>
                     </div>
@@ -141,25 +150,25 @@
                     <!-- Tabs -->
                     <div class="mb-4 border-b border-gray-200">
                         <nav class="-mb-px flex space-x-6" aria-label="Tabs">
-                            <button onclick="changeTab('reviewed')" id="tab-reviewed" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-blue-600 border-blue-600">
-                                Reviewed CV
+                            <button onclick="changeTab('suggestions')" id="tab-suggestions" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-blue-600 border-blue-600">
+                                Tailoring Suggestions
                             </button>
-                            <button onclick="changeTab('suggestions')" id="tab-suggestions" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300">
-                                Key Suggestions
+                             <button onclick="changeTab('reviewed')" id="tab-reviewed" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300">
+                                Highlighted CV
                             </button>
                         </nav>
                     </div>
 
                     <!-- Tab Content -->
-                    <div id="content-reviewed" class="tab-content">
-                        <h3 class="text-lg font-semibold mb-2">Highlighted CV <span class="text-sm font-normal text-gray-500">(Hover over highlights for details)</span></h3>
-                        <div id="highlighted-cv" class="w-full border border-gray-200 rounded-lg p-4 overflow-auto bg-gray-50"></div>
-                    </div>
-                    <div id="content-suggestions" class="tab-content hidden">
+                     <div id="content-suggestions" class="tab-content">
                         <h3 class="text-lg font-semibold mb-2">High-Priority Feedback</h3>
-                        <ul id="suggestions-list" class="list-disc list-inside space-y-2 text-sm">
+                        <ul id="suggestions-list" class="space-y-3 text-sm">
                             <!-- Suggestions will be populated by JS -->
                         </ul>
+                    </div>
+                    <div id="content-reviewed" class="tab-content hidden">
+                        <h3 class="text-lg font-semibold mb-2">Highlighted Generic Issues <span class="text-sm font-normal text-gray-500">(Hover for details)</span></h3>
+                        <div id="highlighted-cv" class="w-full border border-gray-200 rounded-lg p-4 overflow-auto bg-gray-50"></div>
                     </div>
                 </div>
             </div>
@@ -171,6 +180,7 @@
         const assessBtn = document.getElementById('assess-btn');
         const cvInput = document.getElementById('cv-input');
         const apiKeyInput = document.getElementById('api-key-input');
+        const jobDescInput = document.getElementById('job-desc-input');
         const assessmentOutput = document.getElementById('assessment-output');
         const initialState = document.getElementById('initial-state');
         const loadingSpinner = document.getElementById('loading-spinner');
@@ -189,14 +199,16 @@
         
         function checkReadyState() {
             const apiKey = apiKeyInput.value.trim();
+            const jobDesc = jobDescInput.value.trim();
             const fileLoaded = pdfDoc !== null;
-            assessBtn.disabled = !(apiKey && fileLoaded);
+            assessBtn.disabled = !(apiKey && fileLoaded && jobDesc);
         }
 
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) handleFile(e.target.files[0]);
         });
         apiKeyInput.addEventListener('input', checkReadyState);
+        jobDescInput.addEventListener('input', checkReadyState);
         
         function handleFile(file) {
             if (file.type !== 'application/pdf') {
@@ -249,23 +261,20 @@
 
         assessBtn.addEventListener('click', async () => {
             const cvText = cvInput.value;
+            const jobDescText = jobDescInput.value;
             const apiKey = apiKeyInput.value.trim();
 
             if (!apiKey) {
                 alert("Please enter your Gemini API key.");
                 return;
             }
-            if (cvText.trim().length < 50) {
-                alert("Extracted text is too short. Please try another file.");
-                return;
-            }
             initialState.classList.add('hidden');
             resultsContent.classList.add('hidden');
             loadingSpinner.classList.remove('hidden');
-            changeTab('reviewed');
+            changeTab('suggestions');
 
             try {
-                const assessment = await analyzeCVWithGemini(cvText, apiKey);
+                const assessment = await analyzeCVWithGemini(cvText, jobDescText, apiKey);
                 if (assessment) {
                     displayResults(assessment);
                     renderAndHighlightCV(pdfDoc, assessment);
@@ -274,38 +283,57 @@
                 }
             } catch (error) {
                 console.error("Error during Gemini analysis:", error);
-                alert("An error occurred while analyzing the CV. Please check the console for details.");
+                alert("An error occurred during analysis. Please check the console for details.");
             } finally {
                 loadingSpinner.classList.add('hidden');
                 resultsContent.classList.remove('hidden');
             }
         });
         
-        async function analyzeCVWithGemini(text, apiKey) {
+        async function analyzeCVWithGemini(cvText, jobDescText, apiKey) {
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
-            const systemPrompt = "You are an expert career coach and CV analyst. Your task is to review the provided CV text and return a structured JSON object with your analysis. Do not include any introductory text or markdown formatting in your response.";
+            const systemPrompt = "You are an expert career coach and recruiter. Your task is to compare the provided CV against the job description and return a structured JSON object with your analysis. Do not include any introductory text or markdown formatting in your response.";
             
-            const userQuery = `Please analyze the following CV text. Identify personal pronouns, buzzwords, weasel words, and any achievement statements starting with strong action verbs that are not quantified with numbers. Also, check if an email and phone number are present. Provide a score out of 100 and a list of actionable suggestions. CV Text: """${text}"""`;
+            const userQuery = `Please analyze the following CV text against the provided job description. Identify strengths and missing keywords. Provide an overall match score out of 100 and actionable suggestions for tailoring the CV.
+            Most importantly, return a 'highlightableIssues' array. For each item in this array, provide:
+            1. 'textToHighlight': The *exact* phrase or word from the CV text that needs improvement (e.g., a weak verb, a personal pronoun, or a phrase that could be better tailored).
+            2. 'suggestion': A short tooltip explaining *why* it needs improvement (e.g., "Weak word. Use 'Managed' instead." or "Personal pronoun. Use action verbs.").
+            
+            CV Text: """${cvText}"""
+            Job Description: """${jobDescText}"""`;
 
             const schema = {
                 type: "OBJECT",
                 properties: {
-                    score: { type: "NUMBER", description: "Overall CV score from 0 to 100." },
-                    suggestions: { type: "ARRAY", items: { type: "STRING" }, description: "Actionable suggestions for improvement." },
-                    issues: {
-                        type: "OBJECT",
-                        properties: {
-                            pronouns: { type: "ARRAY", items: { "type": "STRING" }, description: "List of personal pronouns found." },
-                            buzzwords: { type: "ARRAY", items: { "type": "STRING" }, description: "List of buzzwords or clichés found." },
-                            weaselWords: { type: "ARRAY", items: { "type": "STRING" }, description: "List of weak 'weasel words' found." },
-                            unquantifiedAchievements: { type: "ARRAY", items: { "type": "STRING" }, description: "Action verbs from unquantified achievements." }
+                    score: { type: "NUMBER", description: "Overall CV-to-Job match score from 0 to 100." },
+                    suggestions: { type: "ARRAY", items: { type: "STRING" }, description: "Actionable suggestions for tailoring the CV." },
+                    strengths: { type: "ARRAY", items: { type: "STRING" }, description: "Specific points where the CV aligns well with the job description." },
+                    missingKeywords: { type: "ARRAY", items: { type: "STRING" }, description: "Important keywords from the job description that are missing from the CV." },
+                    // This new property replaces the old 'issues' object
+                    highlightableIssues: {
+                        type: "ARRAY",
+                        description: "A list of specific issues to highlight in the CV.",
+                        items: {
+                            type: "OBJECT",
+                            properties: {
+                                textToHighlight: { 
+                                    type: "STRING", 
+                                    description: "The exact phrase from the CV to highlight." 
+                                },
+                                suggestion: { 
+                                    type: "STRING", 
+                                    description: "The tooltip suggestion for this highlight." 
+                                }
+                            },
+                            required: ["textToHighlight", "suggestion"]
                         }
                     },
-                    isEmailMissing: { type: "BOOLEAN", description: "True if an email address is not found." },
-                    isPhoneMissing: { type: "BOOLEAN", description: "True if a phone number is not found." }
+                    isEmailMissing: { type: "BOOLEAN" },
+                    isPhoneMissing: { type: "BOOLEAN" }
                 },
-                required: ["score", "suggestions", "issues", "isEmailMissing", "isPhoneMissing"]
+                // Updated 'required' list
+                required: ["score", "suggestions", "strengths", "missingKeywords", "highlightableIssues", "isEmailMissing", "isPhoneMissing"]
             };
 
             const payload = {
@@ -341,31 +369,23 @@
 
         async function renderAndHighlightCV(pdfDoc, assessment) {
             highlightedCvEl.innerHTML = '';
-            const { issues, isEmailMissing, isPhoneMissing } = assessment;
-
-            const highlightRules = [];
-            if (issues.pronouns?.length) {
-                highlightRules.push({
-                    regex: new RegExp(`\\b(${issues.pronouns.join('|')})\\b`, 'i'),
-                    reason: "Personal pronoun found. Use action verbs to start sentences instead."
-                });
-            }
-            if (issues.buzzwords?.length) {
-                highlightRules.push({
-                    regex: new RegExp(`\\b(${issues.buzzwords.join('|')})\\b`, 'i'),
-                    reason: "This is a cliché. Show, don't just tell, this quality with examples."
-                });
-            }
-            if (issues.weaselWords?.length) {
-                 highlightRules.push({
-                    regex: new RegExp(`\\b(${issues.weaselWords.join('|')})\\b`, 'i'),
-                    reason: "This is a 'weasel word'. Use a stronger verb to describe what you did."
-                });
-            }
-             if (issues.unquantifiedAchievements?.length) {
-                 highlightRules.push({
-                    regex: new RegExp(`\\b(${issues.unquantifiedAchievements.join('|')})\\b`, 'i'),
-                    reason: "This achievement is not quantified. Add a number, $, or % to show impact."
+            // Destructure the new 'highlightableIssues' array
+            const { highlightableIssues, isEmailMissing, isPhoneMissing } = assessment;
+            
+            const issueWordMap = new Map();
+            // Populate the map from the new, richer 'highlightableIssues' array
+            if (highlightableIssues && highlightableIssues.length > 0) {
+                highlightableIssues.forEach(issue => {
+                    // The textToHighlight might be a phrase. Split it into words.
+                    const wordsToHighlight = issue.textToHighlight.split(/\s+/);
+                    wordsToHighlight.forEach(word => {
+                        // Clean each word before adding it to the map
+                        const cleanKey = word.toLowerCase().replace(/[^\w'-]|_/g, "");
+                        if (cleanKey) {
+                            // Use the specific suggestion from the AI as the tooltip reason
+                            issueWordMap.set(cleanKey, issue.suggestion);
+                        }
+                    });
                 });
             }
 
@@ -388,62 +408,71 @@
                 highlightedCvEl.appendChild(canvasContainer);
                 
                 await page.render({ canvasContext: context, viewport }).promise;
-                
                 const textContent = await page.getTextContent();
                 
+                // This matching logic is now fed with better data
                 textContent.items.forEach(item => {
                     const text = item.str;
                     if (!text.trim()) return;
 
-                    for (const rule of highlightRules) {
-                        if (rule.regex.test(text)) {
-                            const defaultTransform = viewport.transform;
-                            const transform = pdfjsLib.Util.transform(defaultTransform, item.transform);
-                            
-                            const highlightDiv = document.createElement('div');
-                            highlightDiv.className = 'highlight-layer';
-                            highlightDiv.style.left = `${transform[4]}px`;
-                            highlightDiv.style.top = `${transform[5] - item.height * scale}px`;
-                            highlightDiv.style.width = `${item.width * scale}px`;
-                            highlightDiv.style.height = `${item.height * scale}px`;
+                    // This is the new, more robust logic.
+                    // Split the PDF text chunk into individual words.
+                    const wordsInItem = text.split(/\s+/);
+                    let foundReason = null;
 
-                            const tooltip = document.createElement('span');
-                            tooltip.className = 'tooltip-text';
-                            tooltip.textContent = rule.reason;
-                            highlightDiv.appendChild(tooltip);
-                            canvasContainer.appendChild(highlightDiv);
-                            break; 
+                    // Check each individual word from the chunk.
+                    for (const word of wordsInItem) {
+                        // Clean the word (remove punctuation, keep apostrophes/hyphens)
+                        const cleanWord = word.toLowerCase().replace(/[^\w'-]|_/g, "");
+                        
+                        if (issueWordMap.has(cleanWord)) {
+                            foundReason = issueWordMap.get(cleanWord);
+                            break; // Found an issue, highlight the whole chunk
                         }
                     }
-                });
 
-                if (pageNum === 1 && (isEmailMissing || isPhoneMissing)) {
-                    const headerHeight = viewport.height * 0.20; 
-                    const textInHeader = textContent.items.some(item => {
-                        const transform = pdfjsLib.Util.transform(viewport.transform, item.transform);
-                        return transform[5] < headerHeight;
-                    });
-
-                    if(textInHeader){
-                        let missingItems = [];
-                        if (isEmailMissing) missingItems.push("email");
-                        if (isPhoneMissing) missingItems.push("phone number");
-                        const reason = `Contact info seems to be missing. Ensure your ${missingItems.join(' and ')} is clearly visible in the header.`;
-
+                    // If we found a match, create the highlight
+                    if (foundReason) {
+                        const defaultTransform = viewport.transform;
+                        const transform = pdfjsLib.Util.transform(defaultTransform, item.transform);
+                        
                         const highlightDiv = document.createElement('div');
                         highlightDiv.className = 'highlight-layer';
-                        highlightDiv.style.left = `20px`;
-                        highlightDiv.style.top = `20px`;
-                        highlightDiv.style.width = `${viewport.width - 40}px`;
-                        highlightDiv.style.height = `${headerHeight - 20}px`;
-                        highlightDiv.style.backgroundColor = 'rgba(251, 191, 36, 0.4)';
+                        highlightDiv.style.left = `${transform[4]}px`;
+                        highlightDiv.style.top = `${transform[5] - item.height * scale}px`;
+                        highlightDiv.style.width = `${item.width * scale}px`;
+                        highlightDiv.style.height = `${item.height * scale}px`;
 
                         const tooltip = document.createElement('span');
                         tooltip.className = 'tooltip-text';
-                        tooltip.textContent = reason;
+                        tooltip.textContent = foundReason;
                         highlightDiv.appendChild(tooltip);
                         canvasContainer.appendChild(highlightDiv);
                     }
+                });
+
+                // Re-add logic for missing email/phone highlight
+                if (pageNum === 1 && (isEmailMissing || isPhoneMissing)) {
+                    const headerHeight = viewport.height * 0.20; // Assume header is top 20%
+                    
+                    let missingItems = [];
+                    if (isEmailMissing) missingItems.push("email");
+                    if (isPhoneMissing) missingItems.push("phone number");
+                    const reason = `Contact info may be missing. Ensure your ${missingItems.join(' and ')} is clearly visible in the header.`;
+
+                    const highlightDiv = document.createElement('div');
+                    highlightDiv.className = 'highlight-layer';
+                    highlightDiv.style.left = `20px`;
+                    highlightDiv.style.top = `20px`;
+                    highlightDiv.style.width = `${viewport.width - 40}px`;
+                    highlightDiv.style.height = `${headerHeight - 20}px`;
+                    highlightDiv.style.backgroundColor = 'rgba(251, 191, 36, 0.4)'; // A slightly different yellow
+
+                    const tooltip = document.createElement('span');
+                    tooltip.className = 'tooltip-text';
+                    tooltip.textContent = reason;
+                    highlightDiv.appendChild(tooltip);
+                    canvasContainer.appendChild(highlightDiv);
                 }
             }
         }
@@ -455,31 +484,69 @@
             const colors = { green: '#22c55e', amber: '#f59e0b', red: '#ef4444' };
             if (assessment.score >= 75) {
                 trafficLightEl.classList.add('traffic-light-green');
-                trafficLightTextEl.textContent = 'Good';
+                trafficLightTextEl.textContent = 'Good Match';
                 trafficLightTextEl.style.color = colors.green;
-            } else if (assessment.score >= 45) {
+            } else if (assessment.score >= 50) {
                 trafficLightEl.classList.add('traffic-light-amber');
-                trafficLightTextEl.textContent = 'Needs Improvement';
+                trafficLightTextEl.textContent = 'Needs Tailoring';
                 trafficLightTextEl.style.color = colors.amber;
             } else {
                 trafficLightEl.classList.add('traffic-light-red');
-                trafficLightTextEl.textContent = 'High Concern';
+                trafficLightTextEl.textContent = 'Poor Match';
                 trafficLightTextEl.style.color = colors.red;
             }
 
             suggestionsListEl.innerHTML = '';
-            if (assessment.suggestions.length === 0) {
-                 suggestionsListEl.innerHTML = '<li><p class="font-semibold">Excellent!</p><p>Your CV looks strong and ATS-friendly. No major issues were found.</p></li>';
-            } else {
-                assessment.suggestions.forEach(suggestion => {
+            
+            // Add Strengths
+            if(assessment.strengths && assessment.strengths.length > 0) {
+                const strengthsHeader = document.createElement('li');
+                strengthsHeader.innerHTML = `<h4 class="font-bold text-green-700">Strengths (Aligned with Job Description):</h4>`;
+                suggestionsListEl.appendChild(strengthsHeader);
+                const strengthsList = document.createElement('ul');
+                strengthsList.className = 'list-disc list-inside pl-4';
+                assessment.strengths.forEach(item => {
                     const li = document.createElement('li');
-                    li.textContent = suggestion;
-                    suggestionsListEl.appendChild(li);
+                    li.textContent = item;
+                    strengthsList.appendChild(li);
                 });
+                suggestionsListEl.appendChild(strengthsList);
+            }
+
+            // Add Missing Keywords
+             if(assessment.missingKeywords && assessment.missingKeywords.length > 0) {
+                const missingHeader = document.createElement('li');
+                missingHeader.innerHTML = `<h4 class="font-bold text-amber-700 mt-4">Missing Keywords:</h4>`;
+                suggestionsListEl.appendChild(missingHeader);
+                const missingList = document.createElement('ul');
+                missingList.className = 'list-disc list-inside pl-4';
+                assessment.missingKeywords.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = `Consider adding or highlighting your experience with: "${item}"`;
+                    missingList.appendChild(li);
+                });
+                suggestionsListEl.appendChild(missingList);
+            }
+
+            // Add General Suggestions
+            if(assessment.suggestions && assessment.suggestions.length > 0) {
+                const suggestionsHeader = document.createElement('li');
+                suggestionsHeader.innerHTML = `<h4 class="font-bold text-blue-700 mt-4">Tailoring Suggestions:</h4>`;
+                suggestionsListEl.appendChild(suggestionsHeader);
+                const suggestionsUl = document.createElement('ul');
+                suggestionsUl.className = 'list-disc list-inside pl-4';
+                assessment.suggestions.forEach(item => {
+                    const li = document.createElement('li');
+li.textContent = item;
+                    suggestionsUl.appendChild(li);
+                });
+                suggestionsListEl.appendChild(suggestionsUl);
             }
         }
     </script>
 
 </body>
 </html>
+
+
 
